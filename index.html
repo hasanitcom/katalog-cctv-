@@ -19,11 +19,16 @@
     .thumbs{display:flex;gap:10px;margin-top:10px}
     .thumb{width:60px;height:60px;background:#eee;border-radius:8px}
     input,textarea{width:100%;padding:10px;margin-top:8px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box}
+  @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
   </style>
 </head>
 <body>
 <div class="container">
-  <h1>Katalog Produk</h1>
+  <div style="background:linear-gradient(90deg,#0f2027,#2c5364);color:#fff;padding:30px;border-radius:14px;margin-bottom:20px;text-align:center">
+  <h1 style="margin:0;font-size:32px">JAIFY</h1>
+  <p style="margin:5px 0 0 0;font-size:18px">Sales: Doni Romdoni</p>
+  <h2 style="margin-top:10px">Katalog Produk</h2>
+</div>
   <div class="grid" id="catalog"></div>
 </div>
 
@@ -101,8 +106,62 @@ window.onclick = function(e){
 }
 
 renderCatalog();
+
+function updateTotalHarga(harga){
+  const qtyEl = document.getElementById('qty');
+  const totalEl = document.getElementById('autoTotal');
+  if(qtyEl && totalEl){
+    const total = harga * Number(qtyEl.value || 1);
+    totalEl.innerText = 'Rp ' + total.toLocaleString('id-ID');
+  }
+}
+
+function buyNow(nama,harga){
+  const qty = Number(document.getElementById('qty').value || 1);
+  document.getElementById('modalContent').innerHTML = `
+    <div>
+      <div class="img" style="height:260px">Preview Produk</div>
+      <h3>${nama}</h3>
+      <p>Harga satuan: Rp ${harga.toLocaleString('id-ID')}</p>
+      <p>Total beli: <b id="autoTotal">Rp ${(harga*qty).toLocaleString('id-ID')}</b></p>
+    </div>
+    <div>
+      <h2>Form Pemesanan</h2>
+      <input type="text" id="custName" placeholder="Nama lengkap wajib diisi">
+      <textarea id="custAddress" placeholder="Alamat lengkap wajib diisi"></textarea>
+      <input type="text" id="custPhone" placeholder="Nomor HP wajib diisi">
+      <button onclick="finishOrder('${nama}', ${harga}, ${qty})">Selesai</button>
+    </div>
+  `;
+}
+
+function finishOrder(nama,harga,qty){
+  const nm = document.getElementById('custName').value.trim();
+  const al = document.getElementById('custAddress').value.trim();
+  const hp = document.getElementById('custPhone').value.trim();
+  if(!nm || !al || !hp){
+    alert('Nama, alamat, dan nomor HP wajib diisi');
+    return;
+  }
+  const invoice = 'INV-' + Date.now();
+  document.getElementById('modalContent').innerHTML = `
+    <div style="grid-column:1 / span 2;text-align:center;padding:30px">
+      <h2>Pesanan Sedang Diproses</h2>
+      <p>Invoice: <b>${invoice}</b></p>
+      <p>Nama: ${nm}</p>
+      <p>Alamat: ${al}</p>
+      <p>No HP: ${hp}</p>
+      <p>Produk: ${nama}</p>
+      <p>Jumlah: ${qty}</p>
+      <p>Total: Rp ${(harga*qty).toLocaleString('id-ID')}</p>
+      <div style="margin-top:20px">
+        <div style="width:60px;height:60px;border:6px solid #ddd;border-top:6px solid #d00;border-radius:50%;margin:0 auto;animation:spin 1s linear infinite"></div>
+        <p style="margin-top:15px;font-weight:bold">Status: Sedang diproses...</p>
+      </div>
+    </div>
+  `;
+}
 </script>
 </body>
 </html>
-
 
