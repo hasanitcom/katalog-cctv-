@@ -3,171 +3,89 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Invoice + Katalog Otomatis</title>
+  <title>Katalog Produk + Order Form</title>
   <style>
     body{font-family:Arial,sans-serif;margin:20px;background:#f5f5f5}
-    .container{max-width:1000px;margin:auto;background:#fff;padding:20px;border-radius:12px}
-    h1,h2{text-align:center}
-    input, textarea, button{padding:10px;margin:5px;width:100%;box-sizing:border-box}
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-    .card{border:1px solid #ddd;padding:15px;border-radius:10px;background:#fafafa}
-    .catalog-item{border:1px solid #ddd;border-radius:10px;padding:12px;margin-top:10px;background:#fff}
-    .price{font-weight:bold;font-size:18px}
-    button{cursor:pointer;border:none;border-radius:8px}
-    .btn{background:#111;color:#fff}
+    .container{max-width:1200px;margin:auto}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+    .card{background:#fff;border:1px solid #ddd;border-radius:14px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,0.08)}
+    .img{height:220px;background:#eaeaea;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px}
+    .price{font-size:20px;font-weight:bold;margin:10px 0}
+    .desc{font-size:14px;line-height:1.5}
+    input,button,textarea{width:100%;padding:10px;margin-top:8px;box-sizing:border-box;border-radius:8px;border:1px solid #ccc}
+    .qty-wrap{display:flex;gap:10px;align-items:center;margin-top:10px}
+    .qty-wrap input{width:90px}
+    button{background:#111;color:#fff;border:none;cursor:pointer}
   </style>
 </head>
 <body>
 <div class="container">
-  <h1>Aplikasi Invoice & Katalog</h1>
-  <div style="text-align:center;margin-bottom:15px">
-    <div style="display:inline-block;padding:12px 20px;border:2px solid #111;border-radius:12px;font-weight:bold;font-size:20px">UD. MAKMURSANTOSO7</div>
-  </div>
-
-  <div class="grid">
-    <div class="card">
-      <h2>Input Produk</h2>
-      <label><b>Import Produk via CSV</b></label>
-      <input type="file" id="csvFile" accept=".csv" onchange="importCSV(event)">
-      <input type="text" id="nama" placeholder="Nama produk">
-      <input type="number" id="harga" placeholder="Harga">
-      <textarea id="keterangan" rows="5" placeholder="Masukkan daftar keterangan, satu baris satu poin&#10;Contoh:&#10;Original&#10;Kondisi mulus&#10;Siap kirim"></textarea>
-      <button class="btn" onclick="buatKatalog()">Buat Katalog Otomatis</button>
-    </div>
-
-    <div class="card">
-      <h2>Preview Katalog</h2>
-      <div id="hasil"></div>
-      <div id="invoicePreview" style="margin-top:20px"></div>
-      <div style="margin-top:15px;display:flex;gap:10px;flex-wrap:wrap">
-        <button class="btn" onclick="downloadPDF()">Download PDF</button>
-        <button class="btn" onclick="printInvoice()">Print Invoice</button>
-        <button class="btn" onclick="orderWhatsApp()">Order WhatsApp</button>
-      </div>
-      <div style="margin-top:15px" id="history"></div>
-    </div>
-  </div>
+  <h1>Katalog Produk</h1>
+  <div class="grid" id="catalog"></div>
 </div>
 
 <script>
-function buatKatalog(){
-  const nama = document.getElementById('nama').value;
-  const harga = document.getElementById('harga').value;
-  const keterangan = document.getElementById('keterangan').value;
+const products = [
+  {
+    nama:'Headlamp Mitsubishi Pajero Sport',
+    harga:2500000,
+    materi:'Original OEM | Kondisi mulus 95% | Siap kirim',
+    gambar:'Gambar Produk'
+  },
+  {
+    nama:'Bumper Depan Innova Reborn',
+    harga:1800000,
+    materi:'Original ex asuransi | Cat mulus | Presisi',
+    gambar:'Gambar Produk'
+  }
+];
 
-  const invoiceNo = 'INV-' + new Date().getFullYear() + '-' + String(Date.now()).slice(-6);
-  const tanggal = new Date().toLocaleDateString('id-ID');
-  const alamat = 'UD. MAKMURSANTOSO7, Bekasi, Jawa Barat';
+function renderCatalog(){
+  const html = products.map((p,i)=>`
+    <div class="card">
+      <div class="img">${p.gambar}</div>
+      <h3>${p.nama}</h3>
+      <div class="desc">${p.materi}</div>
+      <div class="price">Rp ${p.harga.toLocaleString('id-ID')}</div>
 
-  const daftar = keterangan
-    .split('
-')
-    .filter(item => item.trim() !== '')
-    .map(item => `<li>${item}</li>`)
-    .join('');
+      <input type="text" id="nama-${i}" placeholder="Nama wajib diisi">
+      <textarea id="alamat-${i}" placeholder="Alamat wajib diisi"></textarea>
+      <input type="text" id="hp-${i}" placeholder="Nomor HP wajib diisi">
 
-  const hargaFormat = Number(harga || 0).toLocaleString('id-ID');
+      <div class="qty-wrap">
+        <label>Jumlah:</label>
+        <input type="number" id="qty-${i}" value="1" min="1">
+      </div>
 
-  document.getElementById('hasil').innerHTML = `
-    <div class="catalog-item">
-      <h3>${nama || 'Nama Produk'}</h3>
-      <div class="price">Rp ${hargaFormat}</div>
-      <p><b>Deskripsi Produk:</b> Produk berkualitas terbaik, siap kirim seluruh Indonesia, cocok untuk kebutuhan toko maupun personal.</p>
-      <ul>${daftar}</ul>
-      <p><b>Alamat:</b> ${alamat}</p>
-      <button class="btn" onclick="alert('Pesanan untuk ${nama || 'produk'} berhasil dibuat')">Beli Sekarang</button>
+      <button onclick="orderProduk(${i})">Order Sekarang</button>
     </div>
-  `;
+  `).join('');
 
-  document.getElementById('invoicePreview').innerHTML = `
-    <div class="catalog-item">
-      <h3>Invoice Otomatis</h3>
-      <div style="font-weight:bold;font-size:18px;margin-bottom:10px">UD. MAKMURSANTOSO7</div>
-      <p><b>No Invoice:</b> ${invoiceNo}</p>
-      <p><b>Tanggal:</b> ${tanggal}</p>
-      <p><b>Produk:</b> ${nama || 'Nama Produk'}</p>
-      <p><b>Total:</b> Rp ${hargaFormat}</p>
-      <p><b>Alamat:</b> ${alamat}</p>
-      <p><b>Pembayaran:</b><br><b>Transfer Bank BCA</b><br>No. Rekening: 1234567890<br>a/n UD. MAKMURSANTOSO7<br>QRIS: Scan kode QRIS toko</p>
-    </div>
-  `;
-  saveHistory(invoiceNo, nama || 'Nama Produk', hargaFormat);
+  document.getElementById('catalog').innerHTML = html;
 }
 
-function printInvoice(){
-  window.print();
+function orderProduk(index){
+  const p = products[index];
+  const nama = document.getElementById(`nama-${index}`).value.trim();
+  const alamat = document.getElementById(`alamat-${index}`).value.trim();
+  const hp = document.getElementById(`hp-${index}`).value.trim();
+  const qty = document.getElementById(`qty-${index}`).value;
+
+  if(!nama || !alamat || !hp){
+    alert('Nama, alamat, dan nomor HP wajib diisi');
+    return;
+  }
+
+  const pesan = encodeURIComponent(
+    `Halo, saya ingin order ${p.nama}\nNama: ${nama}\nAlamat: ${alamat}\nNo HP: ${hp}\nJumlah: ${qty}\nTotal: Rp ${(p.harga*qty).toLocaleString('id-ID')}`
+  );
+
+  window.open(`https://wa.me/6281293632293?text=${pesan}`,'_blank');
 }
 
-function downloadPDF(){
-  const content = document.getElementById('invoicePreview').innerText;
-  const blob = new Blob([content], {type:'text/plain'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'invoice.txt';
-  a.click();
-}
-
-function orderWhatsApp(){
-  const nama = document.getElementById('nama').value || 'Produk';
-  const harga = document.getElementById('harga').value || '0';
-  const text = encodeURIComponent('Halo, saya ingin order ' + nama + ' dengan harga Rp ' + Number(harga).toLocaleString('id-ID'));
-  window.open('https://wa.me/6281293632293?text=' + text, '_blank');
-}
-
-function saveHistory(invoiceNo, nama, hargaFormat){
-  const list = JSON.parse(localStorage.getItem('invoice_history') || '[]');
-  list.unshift({invoiceNo, nama, hargaFormat, date:new Date().toLocaleString('id-ID')});
-  localStorage.setItem('invoice_history', JSON.stringify(list.slice(0,20)));
-  function importCSV(event){
-  const file = event.target.files[0];
-  if(!file) return;
-
-  const reader = new FileReader();
-  reader.onload = function(e){
-    const rows = e.target.result.split(/\r?\n/).filter(r => r.trim() !== '');
-    if(rows.length < 2) return;
-
-    const items = rows.slice(1).map(row => {
-      const data = row.split(',');
-      return {
-        nama: data[0] || '',
-        harga: data[1] || '0',
-        keterangan: (data[2] || '').replace(/\|/g,'\n')
-      };
-    });
-
-    let html = '<h3>Katalog Multi Produk</h3>';
-    items.forEach(item => {
-      const daftar = item.keterangan
-        .split('\n')
-        .filter(x => x.trim() !== '')
-        .map(x => `<li>${x}</li>`)
-        .join('');
-
-      html += `
-        <div class="catalog-item">
-          <h3>${item.nama}</h3>
-          <div class="price">Rp ${Number(item.harga).toLocaleString('id-ID')}</div>
-          <ul>${daftar}</ul>
-          <button class="btn" onclick="window.open('https://wa.me/6281293632293?text=' + encodeURIComponent('Halo, saya ingin order ${item.nama}'),'_blank')">Beli Sekarang</button>
-        </div>
-      `;
-    });
-
-    document.getElementById('hasil').innerHTML = html;
-  };
-  reader.readAsText(file);
-}
-
-renderHistory();
-}
-
-function renderHistory(){
-  const list = JSON.parse(localStorage.getItem('invoice_history') || '[]');
-  document.getElementById('history').innerHTML = '<h3>Riwayat Invoice</h3>' + list.map(item => `<div class="catalog-item"><b>${item.invoiceNo}</b><br>${item.nama} - Rp ${item.hargaFormat}<br>${item.date}</div>`).join('');
-}
-
-renderHistory();
+renderCatalog();
 </script>
 </body>
 </html>
+
+
