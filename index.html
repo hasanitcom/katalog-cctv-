@@ -3,229 +3,125 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Katalog Produk Interaktif</title>
+  <title>JAIFY - Katalog Produk</title>
   <style>
-    body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
-    .container{max-width:1200px;margin:auto;padding:20px}
+    body{font-family:Arial,sans-serif;background:#f5f5f5;margin:0;padding:20px}
+    .container{max-width:1200px;margin:auto}
+    .banner img{width:100%;height:300px;object-fit:cover;border-radius:16px}
+    h2{text-align:center;margin:20px 0}
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
-    .card,.modal-content{background:#fff;border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.08)}
-    .card{padding:16px;cursor:pointer}
-    .img{height:180px;max-width:320px;margin:auto;background:#eaeaea;border-radius:10px;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}.slide{display:none;width:100%;height:100%;object-fit:cover}.slide.active{display:block}
-    .price{font-size:22px;font-weight:bold;color:#d00;margin:8px 0}
-    .desc{font-size:14px;color:#444;line-height:1.6}
-    button{background:#d00;color:#fff;border:none;padding:12px 18px;border-radius:8px;cursor:pointer}
-    .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);padding:30px;z-index:99}
-    .modal-content{max-width:900px;margin:auto;padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:20px}
-    .thumbs{display:flex;gap:10px;margin-top:10px}
-    .thumb{width:60px;height:60px;background:#eee;border-radius:8px}
-    input,textarea{width:100%;padding:10px;margin-top:8px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box}
-  @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+    .card{background:#fff;border-radius:14px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+    .slider{position:relative;height:180px;overflow:hidden;border-radius:10px;background:#eee}
+    .slide{display:none;width:100%;height:100%;object-fit:cover}
+    .slide.active{display:block}
+    .price{font-size:22px;font-weight:bold;color:#d00;margin:10px 0}
+    .desc{font-size:14px;line-height:1.6;color:#444}
+    button{width:100%;padding:12px;border:none;border-radius:8px;background:#d00;color:#fff;cursor:pointer;margin-top:10px}
+    .order-box{margin-top:15px;padding-top:15px;border-top:1px solid #ddd}
+    input,textarea{width:100%;padding:10px;margin-top:8px;box-sizing:border-box;border-radius:8px;border:1px solid #ccc}
+    .invoice{margin-top:15px;background:#fafafa;padding:15px;border-radius:10px;border:1px solid #ddd}
+    .loading{width:40px;height:40px;border:4px solid #ddd;border-top:4px solid #d00;border-radius:50%;animation:spin 1s linear infinite;margin:15px auto}
+    @keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
   </style>
 </head>
 <body>
 <div class="container">
-  <div style="text-align:center;margin-bottom:10px">
-  <div style="display:inline-flex;align-items:center;gap:12px;background:#fff;padding:10px 16px;border-radius:999px;box-shadow:0 2px 8px rgba(0,0,0,0.1)">
-    <img src="https://via.placeholder.com/60" alt="Sales Doni Romdoni" style="width:60px;height:60px;border-radius:50%;object-fit:cover">
-    <div style="text-align:left">
-      <div style="font-weight:bold">Sales</div>
-      <div style="font-size:14px">Doni Romdoni</div>
-    </div>
+  <div class="banner">
+    <img src="https://res.cloudinary.com/dmawwoupq/image/upload/v1774363111/uey3nzizi65lbgjv8gxm.jpg" alt="Banner JAIFY">
   </div>
-</div>
 
-<div style="margin-bottom:20px">
-  <img src="https://res.cloudinary.com/dmawwoupq/image/upload/v1774363111/uey3nzizi65lbgjv8gxm.jpg" alt="Banner" style="width:100%;border-radius:14px;object-fit:cover">
-</div>
+  <h2>Katalog Produk</h2>
 
-<h2 style="text-align:center;margin-bottom:20px">Katalog Produk</h2>
-  <h1 style="margin:0;font-size:32px">JAIFY</h1>
-  <p style="margin:5px 0 0 0;font-size:18px">Sales: Doni Romdoni</p>
-  <h2 style="margin-top:10px">Katalog Produk</h2>
-</div>
   <div class="grid" id="catalog"></div>
 </div>
 
-<div class="modal" id="productModal">
-  <div class="modal-content" id="modalContent"></div>
-</div>
-
 <script>
-const productImages = [
-  'Gambar 1',
-  'Gambar 2',
-  'Gambar 3',
-  'Gambar 4',
-  'Gambar 5'
-];
-let currentSlide = 0;
-
-function renderSlider(){
-  return productImages.map((img,index)=>`<div class="slide ${index===0?'active':''}">${img}</div>`).join('');
-}
-
-function nextSlide(){
-  const slides = document.querySelectorAll('.slide');
-  if(!slides.length) return;
-  slides[currentSlide].classList.remove('active');
-  currentSlide = (currentSlide + 1) % slides.length;
-  slides[currentSlide].classList.add('active');
-}
-
-setInterval(nextSlide, 2500);
-
 const products = [
   {
     nama:'JAIFY M2-3MP Smart Indoor CCTV',
     harga:501000,
-    materi:'Camera indoor PTZ 2K+, panorama 360°, two-way talk, full color night vision, garansi 1 tahun',
-    gambar:'Gambar Produk'
+    materi:'Camera indoor PTZ 2K+ | Panorama 360° | Two-way talk | Full color night vision | Garansi 1 tahun',
+    images:['cctv1.jpg','cctv2.jpg','cctv3.jpg','cctv4.jpg','cctv5.jpg'],
+    stok:25
+  },
+  {
+    nama:'JAIFY Outdoor CCTV 5MP',
+    harga:750000,
+    materi:'Kamera outdoor waterproof | Night vision HD | Support mobile app | Garansi resmi',
+    images:['cctv-out1.jpg','cctv-out2.jpg','cctv-out3.jpg','cctv-out4.jpg','cctv-out5.jpg'],
+    stok:18
   }
 ];
 
+function sliderHTML(images,id){
+  return `<div class="slider">${images.map((img,i)=>`<img src="${img}" class="slide ${i===0?'active':''}" data-id="${id}">`).join('')}</div>`;
+}
+
 function renderCatalog(){
   document.getElementById('catalog').innerHTML = products.map((p,i)=>`
-    <div class="card" onclick="showDetail(${i})">
-      <div class="img">${renderSlider()}</div>
+    <div class="card">
+      ${sliderHTML(p.images,i)}
       <h3>${p.nama}</h3>
       <div class="desc">${p.materi}</div>
       <div class="price">Rp ${p.harga.toLocaleString('id-ID')}</div>
+      <div>Stok: ${p.stok}</div>
+      <button onclick="showOrder(${i})">Pesan</button>
+      <div id="order-${i}"></div>
     </div>
   `).join('');
 }
 
-function showDetail(index){
-  const p = products[index];
-  document.getElementById('modalContent').innerHTML = `
-    <div>
-      <div class="img" style="height:260px;max-width:360px">${renderSlider()}</div>
-      <div class="thumbs">
-        <div class="thumb"></div>
-        <div class="thumb"></div>
-        <div class="thumb"></div>
-      </div>
-      <p class="desc" style="margin-top:15px"><b>Deskripsi:</b><br>${p.materi}</p>
-    </div>
-    <div>
-      <h2>${p.nama}</h2>
-      <div class="price">Rp ${p.harga.toLocaleString('id-ID')}</div>
-      <p>Produk original • Garansi resmi • Siap kirim</p>
-      <input type="text" id="custName" placeholder="Nama lengkap wajib diisi">
-      <textarea id="custAddress" placeholder="Alamat lengkap wajib diisi"></textarea>
-      <input type="text" id="custPhone" placeholder="Nomor HP wajib diisi">
-      <input type="number" id="qty" value="1" min="1">
-      <button onclick="showOrderForm('${p.nama}', ${p.harga})">Pesan</button>
-      <button style="background:#555;margin-left:8px" onclick="closeModal()">Tutup</button>
-    </div>
-  `;
-  document.getElementById('productModal').style.display='block';
+function showOrder(i){
+  const p = products[i];
+  document.getElementById(`order-${i}`).innerHTML = `
+    <div class="order-box">
+      <input type="number" id="qty-${i}" value="1" min="1" onchange="updateTotal(${i})">
+      <div>Total: <b id="total-${i}">Rp ${p.harga.toLocaleString('id-ID')}</b></div>
+      <input type="text" id="nama-${i}" placeholder="Nama wajib diisi">
+      <textarea id="alamat-${i}" placeholder="Alamat wajib diisi"></textarea>
+      <input type="text" id="hp-${i}" placeholder="Nomor HP wajib diisi">
+      <button onclick="finishOrder(${i})">Selesai</button>
+    </div>`;
 }
 
-function closeModal(){
-  document.getElementById('productModal').style.display='none';
+function updateTotal(i){
+  const qty = Number(document.getElementById(`qty-${i}`).value || 1);
+  const total = qty * products[i].harga;
+  document.getElementById(`total-${i}`).innerText = 'Rp ' + total.toLocaleString('id-ID');
 }
 
-function showOrderForm(nama,harga){
-  const container = document.getElementById('modalContent');
-  const formHTML = `
-    <div style="grid-column:1 / span 2;margin-top:20px;padding:20px;border-top:2px solid #eee">
-      <h3>Form Pemesanan</h3>
-      <p><b>${nama}</b></p>
-      <p>Harga satuan: Rp ${harga.toLocaleString('id-ID')}</p>
-      <input type="number" id="qty" value="1" min="1" onchange="updateTotalHarga(${harga})">
-      <p>Total: <b id="autoTotal">Rp ${harga.toLocaleString('id-ID')}</b></p>
-      <input type="text" id="custName" placeholder="Nama wajib diisi">
-      <textarea id="custAddress" placeholder="Alamat wajib diisi"></textarea>
-      <input type="text" id="custPhone" placeholder="Nomor HP wajib diisi">
-      <button onclick="finishOrder('${nama}', ${harga})">Selesai</button>
-    </div>
-  `;
-  container.insertAdjacentHTML('beforeend', formHTML);
-}
-
-function finishOrder(nama,harga){
-  const nm = document.getElementById('custName').value.trim();
-  const al = document.getElementById('custAddress').value.trim();
-  const hp = document.getElementById('custPhone').value.trim();
-  const qty = Number(document.getElementById('qty').value || 1);
-  if(!nm || !al || !hp){
-    alert('Nama, alamat, dan nomor HP wajib diisi');
-    return;
-  }
+function finishOrder(i){
+  const p = products[i];
+  const qty = Number(document.getElementById(`qty-${i}`).value || 1);
+  const nama = document.getElementById(`nama-${i}`).value.trim();
+  const alamat = document.getElementById(`alamat-${i}`).value.trim();
+  const hp = document.getElementById(`hp-${i}`).value.trim();
+  if(!nama || !alamat || !hp){ alert('Nama, alamat, dan nomor HP wajib diisi'); return; }
   const invoice = 'INV-' + Date.now();
-  document.getElementById('modalContent').innerHTML = `
-    <div style="grid-column:1 / span 2;text-align:center;padding:30px">
-      <h2>Pesanan Berhasil</h2>
-      <p>Invoice: <b>${invoice}</b></p>
-      <p>${nama} x ${qty}</p>
-      <p>Total: Rp ${(harga*qty).toLocaleString('id-ID')}</p>
-    </div>
-  `;
-}
-  const pesan = encodeURIComponent(`Halo, saya ingin membeli ${nama}\nNama: ${nm}\nAlamat: ${al}\nHP: ${hp}\nJumlah: ${qty}\nTotal: Rp ${(harga*qty).toLocaleString('id-ID')}`);
-  window.open(`https://wa.me/6281293632293?text=${pesan}`,'_blank');
+  document.getElementById(`order-${i}`).innerHTML = `
+    <div class="invoice">
+      <div class="loading"></div>
+      <h4>Pesanan Sedang Diproses</h4>
+      <p><b>${invoice}</b></p>
+      <p>${p.nama}</p>
+      <p>Jumlah: ${qty}</p>
+      <p>Total: Rp ${(qty*p.harga).toLocaleString('id-ID')}</p>
+      <p>Nama: ${nama}</p>
+      <p>Alamat: ${alamat}</p>
+      <p>HP: ${hp}</p>
+    </div>`;
 }
 
-window.onclick = function(e){
-  if(e.target.id === 'productModal') closeModal();
-}
+setInterval(()=>{
+  document.querySelectorAll('.slider').forEach(slider=>{
+    const slides = slider.querySelectorAll('.slide');
+    let active = [...slides].findIndex(s=>s.classList.contains('active'));
+    slides[active].classList.remove('active');
+    slides[(active+1)%slides.length].classList.add('active');
+  });
+},2500);
 
 renderCatalog();
-
-function updateTotalHarga(harga){
-  const qtyEl = document.getElementById('qty');
-  const totalEl = document.getElementById('autoTotal');
-  if(qtyEl && totalEl){
-    const total = harga * Number(qtyEl.value || 1);
-    totalEl.innerText = 'Rp ' + total.toLocaleString('id-ID');
-  }
-}
-
-function buyNow(nama,harga){
-  const qty = Number(document.getElementById('qty').value || 1);
-  document.getElementById('modalContent').innerHTML = `
-    <div>
-      <div class="img" style="height:260px">Preview Produk</div>
-      <h3>${nama}</h3>
-      <p>Harga satuan: Rp ${harga.toLocaleString('id-ID')}</p>
-      <p>Total beli: <b id="autoTotal">Rp ${(harga*qty).toLocaleString('id-ID')}</b></p>
-    </div>
-    <div>
-      <h2>Form Pemesanan</h2>
-      <input type="text" id="custName" placeholder="Nama lengkap wajib diisi">
-      <textarea id="custAddress" placeholder="Alamat lengkap wajib diisi"></textarea>
-      <input type="text" id="custPhone" placeholder="Nomor HP wajib diisi">
-      <button onclick="finishOrder('${nama}', ${harga}, ${qty})">Selesai</button>
-    </div>
-  `;
-}
-
-function finishOrder(nama,harga,qty){
-  const nm = document.getElementById('custName').value.trim();
-  const al = document.getElementById('custAddress').value.trim();
-  const hp = document.getElementById('custPhone').value.trim();
-  if(!nm || !al || !hp){
-    alert('Nama, alamat, dan nomor HP wajib diisi');
-    return;
-  }
-  const invoice = 'INV-' + Date.now();
-  document.getElementById('modalContent').innerHTML = `
-    <div style="grid-column:1 / span 2;text-align:center;padding:30px">
-      <h2>Pesanan Sedang Diproses</h2>
-      <p>Invoice: <b>${invoice}</b></p>
-      <p>Nama: ${nm}</p>
-      <p>Alamat: ${al}</p>
-      <p>No HP: ${hp}</p>
-      <p>Produk: ${nama}</p>
-      <p>Jumlah: ${qty}</p>
-      <p>Total: Rp ${(harga*qty).toLocaleString('id-ID')}</p>
-      <div style="margin-top:20px">
-        <div style="width:60px;height:60px;border:6px solid #ddd;border-top:6px solid #d00;border-radius:50%;margin:0 auto;animation:spin 1s linear infinite"></div>
-        <p style="margin-top:15px;font-weight:bold">Status: Sedang diproses...</p>
-      </div>
-    </div>
-  `;
-}
 </script>
 </body>
 </html>
