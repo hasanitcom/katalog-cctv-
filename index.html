@@ -26,8 +26,14 @@
 </head>
 <body>
 <div class="container">
+  <div style="background:#fff;padding:20px;border-radius:14px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.08)">
+    <h3>Admin Upload Produk</h3>
+    <input type="file" id="csvUpload" accept=".csv" style="margin-bottom:10px">
+    <button onclick="uploadCSVAdmin()">Upload CSV Produk</button>
+    <p style="font-size:13px;color:#666">Upload file CSV untuk update katalog tanpa edit kode.</p>
+  </div>
   <div class="banner">
-    <img src="https://res.cloudinary.com/dmawwoupq/image/upload/v1774363111/uey3nzizi65lbgjv8gxm.jpg" alt="Banner JAIFY">
+    <img src="banner-jaify.jpg" alt="Banner JAIFY">
   </div>
 
   <h2>Katalog Produk</h2>
@@ -36,22 +42,26 @@
 </div>
 
 <script>
-const products = [
-  {
-    nama:'JAIFY M2-3MP Smart Indoor CCTV',
-    harga:501000,
-    materi:'Camera indoor PTZ 2K+ | Panorama 360° | Two-way talk | Full color night vision | Garansi 1 tahun',
-    images:['cctv1.jpg','cctv2.jpg','cctv3.jpg','cctv4.jpg','cctv5.jpg'],
-    stok:25
-  },
-  {
-    nama:'JAIFY Outdoor CCTV 5MP',
-    harga:750000,
-    materi:'Kamera outdoor waterproof | Night vision HD | Support mobile app | Garansi resmi',
-    images:['cctv-out1.jpg','cctv-out2.jpg','cctv-out3.jpg','cctv-out4.jpg','cctv-out5.jpg'],
-    stok:18
-  }
-];
+let products = [];
+
+async function loadCSV(){
+  const res = await fetch('katalog_produk.csv');
+  const text = await res.text();
+  const rows = text.split(/
+?
+/).filter(r => r.trim() !== '');
+  products = rows.slice(1).map(row => {
+    const cols = row.split(',');
+    return {
+      nama: cols[0],
+      harga: Number(cols[1]),
+      materi: (cols[2] || '').replace(/\|/g,' • '),
+      images: [cols[3], cols[4], cols[5], cols[6], cols[7]].filter(Boolean),
+      stok: Number(cols[8] || 0)
+    };
+  });
+  loadCSV();
+}
 
 function sliderHTML(images,id){
   return `<div class="slider">${images.map((img,i)=>`<img src="${img}" class="slide ${i===0?'active':''}" data-id="${id}">`).join('')}</div>`;
@@ -122,6 +132,31 @@ setInterval(()=>{
 },2500);
 
 renderCatalog();
+
+function uploadCSVAdmin(){
+  const file = document.getElementById('csvUpload').files[0];
+  if(!file){ alert('Pilih file CSV terlebih dahulu'); return; }
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const text = e.target.result;
+    const rows = text.split(/
+?
+/).filter(r => r.trim() !== '');
+    products = rows.slice(1).map(row => {
+      const cols = row.split(',');
+      return {
+        nama: cols[0],
+        harga: Number(cols[1]),
+        materi: (cols[2] || '').replace(/\|/g,' • '),
+        images: [cols[3], cols[4], cols[5], cols[6], cols[7]].filter(Boolean),
+        stok: Number(cols[8] || 0)
+      };
+    });
+    renderCatalog();
+    alert('Katalog berhasil diperbarui');
+  };
+  reader.readAsText(file);
+}
 </script>
 </body>
 </html>
